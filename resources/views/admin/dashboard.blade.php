@@ -1,0 +1,148 @@
+<x-app-layout>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,700;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;700&display=swap');
+.parchment-font{font-family:'Crimson Text',serif;}
+.tech-font{font-family:'Chakra Petch',sans-serif;}
+.bg-industrial{background-color:#1a120b;background-image:url("https://www.transparenttextures.com/patterns/dark-leather.png");}
+</style>
+<x-slot name="header">
+<div style="display:flex;align-items:center;justify-content:between;">
+<h2 class="tech-font" style="font-weight:900;font-size:1.25rem;color:#B8860B;letter-spacing:0.3em;text-transform:uppercase;font-style:italic;">
+Terminal Admin PawDoc
+</h2>
+<span style="font-size:10px;font-family:monospace;color:#B8860B;margin-left:auto;">STEAM PRESSURE: OPTIMAL</span>
+</div>
+</x-slot>
+
+<div class="py-12 bg-industrial min-h-screen relative tech-font" style="z-index:10;">
+<div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+
+@if(session('success'))
+<div style="margin-bottom:24px;padding:16px;background-color:rgba(92,64,51,0.2);border-left:4px solid #B8860B;color:#e2d1b3;font-weight:700;font-style:italic;">
+NOTIFIKASI: {{ session('success') }}
+</div>
+@endif
+
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:32px;margin-bottom:48px;">
+<div style="background-color:#2a1d15;border:2px solid rgba(184,134,11,0.4);box-shadow:8px 8px 0px rgba(0,0,0,0.5);padding:24px;position:relative;overflow:hidden;">
+<div style="color:#B8860B;text-transform:uppercase;font-size:10px;font-weight:900;letter-spacing:0.1em;">Total Pengguna</div>
+<div style="font-size:2.5rem;font-weight:700;color:#e2d1b3;margin-top:8px;font-style:italic;">{{ $totalUser }}</div>
+</div>
+<div style="background-color:#2a1d15;border:2px solid rgba(184,134,11,0.4);box-shadow:8px 8px 0px rgba(0,0,0,0.5);padding:24px;">
+<div style="color:#B8860B;text-transform:uppercase;font-size:10px;font-weight:900;letter-spacing:0.1em;">Laporan Aktif</div>
+<div style="font-size:2.5rem;font-weight:700;color:#e2d1b3;margin-top:8px;font-style:italic;">{{ $activeReports ?? 0 }}</div>
+</div>
+<div style="background-color:#2a1d15;border:2px solid rgba(184,134,11,0.4);box-shadow:8px 8px 0px rgba(0,0,0,0.5);padding:24px;">
+<div style="color:#B8860B;text-transform:uppercase;font-size:10px;font-weight:900;letter-spacing:0.1em;">Laporan Menunggu</div>
+<div style="font-size:2.5rem;font-weight:700;color:#e2d1b3;margin-top:8px;font-style:italic;">{{ $pendingCount }}</div>
+</div>
+</div>
+
+<div style="margin-bottom:80px;">
+<div style="background-color:#2a1d15;border:4px solid #5c4033;box-shadow:20px 20px 60px rgba(0,0,0,0.8);">
+<div class="parchment-font" style="background-color:#e2d1b3;padding:40px;color:#3d2b1f;">
+<div style="text-align:center;margin-bottom:40px;border-bottom:2px solid rgba(92,64,51,0.2);padding-bottom:24px;">
+<h3 style="font-size:2rem;font-weight:700;text-transform:uppercase;letter-spacing:0.3em;">Daftar Pengguna</h3>
+<p style="font-size:10px;font-style:italic;color:#5c4033;text-transform:uppercase;letter-spacing:0.5em;margin-top:8px;">Arsip Data Pengguna Terdaftar</p>
+</div>
+<div style="overflow-x:auto;">
+<table style="width:100%;">
+<thead>
+<tr style="border-bottom:2px solid #5c4033;font-size:12px;text-transform:uppercase;letter-spacing:0.1em;font-weight:900;">
+<th style="padding:16px;text-align:left;">Nama</th>
+<th style="padding:16px;text-align:left;">Email</th>
+<th style="padding:16px 24px;text-align:center;">Status</th>
+<th style="padding:16px 24px;text-align:center;">Aksi</th>
+</tr>
+</thead>
+<tbody>
+@foreach($allUsers as $user)
+<tr style="border-bottom:1px solid rgba(92,64,51,0.1);">
+<td style="padding:24px 16px;">
+<div style="font-size:1.25rem;font-weight:700;">{{ $user->name }}</div>
+<div style="font-size:9px;text-transform:uppercase;opacity:0.6;">Pengguna #{{ $user->id }}</div>
+</td>
+<td style="padding:24px 16px;font-style:italic;font-size:0.875rem;font-family:monospace;opacity:0.8;">{{ $user->email }}</td>
+<td style="padding:24px;text-align:center;">
+<span style="border:2px solid #3d2b1f;padding:4px 16px;font-size:10px;font-weight:900;text-transform:uppercase;{{ $user->role == 'admin' ? 'background-color:#3d2b1f;color:#e2d1b3;' : 'color:#3d2b1f;' }}">
+{{ $user->role }}
+</span>
+</td>
+<td style="padding:24px;text-align:center;">
+<div style="display:flex;justify-content:center;gap:24px;font-size:10px;font-weight:900;letter-spacing:0.2em;">
+<a href="{{ route('admin.user.pets', $user->id) }}" style="color:#8b4513;text-decoration:underline;">LIHAT ARSIP</a>
+@if($user->id !== Auth::id())
+<form action="{{ route('admin.user.destroy', $user->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus pengguna ini?')">
+@csrf @method('DELETE')
+<button type="submit" style="color:#7f1d1d;text-decoration:underline;background:none;border:none;cursor:pointer;font-size:10px;font-weight:900;letter-spacing:0.2em;font-family:inherit;">HAPUS</button>
+</form>
+@else
+<span style="color:#5c4033;font-style:italic;opacity:0.4;font-family:monospace;font-size:9px;">ANDA</span>
+@endif
+</div>
+</td>
+</tr>
+@endforeach
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+
+<div>
+<h3 class="tech-font" style="color:#B8860B;font-size:1.125rem;margin-bottom:24px;letter-spacing:0.2em;text-transform:uppercase;font-style:italic;">Laporan Masuk</h3>
+<div style="background-color:#2a1d15;border:4px solid #5c4033;box-shadow:0 25px 50px rgba(0,0,0,0.8);">
+<div class="parchment-font" style="background-color:#e2d1b3;padding:40px;color:#3d2b1f;">
+<div style="overflow-x:auto;">
+<table style="width:100%;color:#3d2b1f;">
+<thead>
+<tr style="border-bottom:2px solid #5c4033;font-size:12px;text-transform:uppercase;letter-spacing:0.1em;font-weight:900;">
+<th style="padding:16px;text-align:left;">Pasien & Hewan</th>
+<th style="padding:16px;text-align:left;">Keluhan Dilaporkan</th>
+<th style="padding:16px 24px;text-align:center;">Tindakan Medis</th>
+</tr>
+</thead>
+<tbody>
+@forelse($pendingReports as $report)
+<tr style="border-bottom:1px solid rgba(92,64,51,0.1);">
+<td style="padding:16px;">
+<div style="font-weight:700;font-size:1.125rem;">{{ $report->pet->name }}</div>
+<div style="font-size:9px;text-transform:uppercase;opacity:0.6;margin-bottom:8px;">Pemilik: {{ $report->user->name }}</div>
+@if($report->pet->photo)
+<img src="{{ asset('storage/' . $report->pet->photo) }}" style="width:60px;height:60px;object-fit:cover;border-radius:4px;margin-top:4px;">
+@else
+<span style="font-size:9px;opacity:0.4;font-style:italic;font-family:monospace;">Tidak ada foto</span>
+@endif
+</td>
+<td style="padding:16px;font-style:italic;font-size:0.875rem;">"{{ $report->symptoms }}"</td>
+<td style="padding:16px 24px;text-align:center;">
+<form action="{{ route('admin.reports.update', $report->id) }}" method="POST" style="display:flex;flex-direction:column;gap:8px;">
+@csrf @method('PATCH')
+<input type="text" name="diagnosis" placeholder="Masukkan Diagnosa..." style="background-color:rgba(217,197,163,0.5);border:2px solid #3d2b1f;font-size:10px;padding:4px;outline:none;" required>
+<input type="text" name="medicine" placeholder="Obat yang Direkomendasikan..." style="background-color:rgba(217,197,163,0.5);border:2px solid #3d2b1f;font-size:10px;padding:4px;outline:none;">
+<button type="submit" style="background-color:#3d2b1f;color:#e2d1b3;font-size:9px;font-weight:900;padding:8px;text-transform:uppercase;border:none;cursor:pointer;">
+KIRIM DIAGNOSA
+</button>
+</form>
+</td>
+</tr>
+@empty
+<tr>
+<td colspan="3" style="text-align:center;padding:40px;font-style:italic;opacity:0.4;">Tidak ada laporan yang masuk.</td>
+</tr>
+@endforelse
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+
+<div style="margin-top:64px;text-align:center;">
+<p style="color:rgba(184,134,11,0.4);font-size:8px;font-family:monospace;letter-spacing:0.8em;text-transform:uppercase;">System Powered by PawDoc v3.4.1</p>
+</div>
+</div>
+</div>
+</x-app-layout>
