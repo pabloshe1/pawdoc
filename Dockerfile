@@ -13,11 +13,6 @@ COPY . .
 
 RUN composer install --no-dev --optimize-autoloader
 
-COPY .env.example .env
-RUN php artisan key:generate
-
 RUN chown -R www-data:www-data storage bootstrap/cache
 
-EXPOSE 8080
-
-CMD php artisan serve --host=0.0.0.0 --port=${PORT:-8080}
+CMD php artisan config:clear && php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=${PORT:-8080}
