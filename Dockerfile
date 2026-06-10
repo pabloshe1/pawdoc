@@ -16,8 +16,8 @@ RUN composer install --no-dev --optimize-autoloader
 COPY .env.example .env
 RUN php artisan key:generate
 
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+RUN chown -R www-data:www-data storage bootstrap/cache
 
-EXPOSE 8000
+EXPOSE 8080
 
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
+CMD php artisan serve --host=0.0.0.0 --port=${PORT:-8080}
